@@ -3,6 +3,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Scanner;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BobTheBearMain {
 	public static void main(String args[]) throws Exception {
@@ -31,6 +32,8 @@ public class BobTheBearMain {
 				&& salmonLengthArr.length >= 1 && salmonTimeArr.length >= 0) {
 			if (NoOfSalmons == 1) {
 				System.out.println(1);
+			} else if (NoOfSalmons == 2) {
+				System.out.println(2);
 			} else {
 				System.out.println(NoOfSalmonsCatched(salmonLengthArr,
 						salmonTimeArr, tailArr));
@@ -61,35 +64,30 @@ public class BobTheBearMain {
 				return Integer.valueOf(o1.size()).compareTo(o2.size());
 			}
 		});
-		System.out.println(allList1);
-		List<List<Long>> allList2 = allList1;
+
+		List<List<Long>> allList2 = new CopyOnWriteArrayList<List<Long>>(
+				allList1);
+
 		List<Integer> countList = new ArrayList<Integer>();
-		/*
-		 * if (salmonHeadList.contains(0)) { count =
-		 * Collections.frequency(salmonHeadList, 0); chance--; } else if (chance
-		 * > 0) {
-		 */
 		for (List<Long> list1 : allList1) {
 			int count = 0;
 			for (List<Long> list2 : allList2) {
 				if (!Collections.disjoint(list1, list2)) {
 					count++;
+					allList2.remove(list2);
 				}
 			}
 			countList.add(count);
 		}
-		// }
 		Collections.sort(countList);
 		Collections.reverse(countList);
 		System.out.println(countList);
-		System.out.println(countList.get(0));
-		System.out.println(countList.get(1));
-		if(countList.get(0) == salmonHeadArr.length){
+		if (countList.get(0) == salmonHeadArr.length) {
 			return countList.get(0);
-		}else {
+		} else {
 			return countList.get(0) + countList.get(1);
 		}
-		
+
 	}
 
 }
