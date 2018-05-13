@@ -9,7 +9,7 @@ public class BobTheBearMain {
 	public static void main(String args[]) throws Exception {
 
 		Scanner scan = new Scanner(System.in);
-		System.out.println("Enter Number of salmons -->  ");
+	//	System.out.println("Enter Number of salmons -->  ");
 		int NoOfSalmons = scan.nextInt();
 
 		Long salmonLengthArr[] = new Long[NoOfSalmons];
@@ -72,7 +72,8 @@ public class BobTheBearMain {
 		for (List<Long> list1 : allList1) {
 			int count = 0;
 			for (List<Long> list2 : allList2) {
-				if (!Collections.disjoint(list1, list2)) {
+				List<Long> common = new ArrayList<Long>(list2);
+				if (!Collections.disjoint(common, list1)) {
 					count++;
 					allList2.remove(list2);
 				}
