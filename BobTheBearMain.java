@@ -1,15 +1,17 @@
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
+import java.util.Locale.Category;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BobTheBearMain {
 	public static void main(String args[]) throws Exception {
 
 		Scanner scan = new Scanner(System.in);
-	//	System.out.println("Enter Number of salmons -->  ");
+		System.out.println("Enter Number of salmons -->  ");
 		int NoOfSalmons = scan.nextInt();
 
 		Long salmonLengthArr[] = new Long[NoOfSalmons];
@@ -42,53 +44,78 @@ public class BobTheBearMain {
 		scan.close();
 	}
 
-	// timeArr == headArr
-	public static int NoOfSalmonsCatched(Long[] salmonLengthArr,
+	private static int NoOfSalmonsCatched(Long[] salmonLengthArr,
 			Long[] salmonHeadArr, Long[] tailArr) {
 
-		List<List<Long>> allList1 = new ArrayList<List<Long>>();
+		List<Long> headList = new ArrayList<Long>();
+		List<Long> tailList = new ArrayList<Long>();
 
+		Set<Integer> set = new HashSet<Integer>();
 		for (int i = 0; i < salmonHeadArr.length; i++) {
-			List<Long> individualList = new ArrayList<Long>();
-			Long h = salmonHeadArr[i];
-			Long t = tailArr[i];
-			for (Long j = h; j <= t; j++) {
-				individualList.add(j);
-			}
-			allList1.add(individualList);
-		}
+			long head1 = salmonHeadArr[i];
+			long tail1 = tailArr[i];
+			int catchCount = 0;
+			for (int j = 0; j < salmonHeadArr.length; j++) {
+				long head2 = salmonHeadArr[j];
+				long tail2 = tailArr[j];
+				int tempCount = 0;
+				for (long q = head1; q <= tail1; q++) {
+					for (long p = head2; p <= tail2; p++) {
+						if (q == p) {
+							tempCount++;
+						}
+					}
 
-		Collections.sort(allList1, new Comparator<List<?>>() {
-			@Override
-			public int compare(List<?> o1, List<?> o2) {
-				return Integer.valueOf(o1.size()).compareTo(o2.size());
-			}
-		});
-
-		List<List<Long>> allList2 = new CopyOnWriteArrayList<List<Long>>(
-				allList1);
-
-		List<Integer> countList = new ArrayList<Integer>();
-		for (List<Long> list1 : allList1) {
-			int count = 0;
-			for (List<Long> list2 : allList2) {
-				List<Long> common = new ArrayList<Long>(list2);
-				if (!Collections.disjoint(common, list1)) {
-					count++;
-					allList2.remove(list2);
 				}
+				if (tempCount > 0) {
+					catchCount++;
+				}
+
 			}
-			countList.add(count);
-		}
-		Collections.sort(countList);
-		Collections.reverse(countList);
-		System.out.println(countList);
-		if (countList.get(0) == salmonHeadArr.length) {
-			return countList.get(0);
-		} else {
-			return countList.get(0) + countList.get(1);
+			set.add(catchCount);
 		}
 
+		List<Integer> al = new ArrayList<Integer>(set);
+		System.out.println(al);
+		if (al.size() > 1) {
+
+			if (al.get(0) == 1 && al.get(1) == 1) {
+				return 2;
+			} else {
+				return al.get(0) + al.get(1);
+			}
+		}
+		return 0;
 	}
-
+	/*
+	 * // timeArr == headArr public static int NoOfSalmonsCatched(Long[]
+	 * salmonLengthArr, Long[] salmonHeadArr, Long[] tailArr) {
+	 * 
+	 * List<List<Long>> allList1 = new ArrayList<List<Long>>();
+	 * 
+	 * 
+	 * for (int i = 0; i < salmonHeadArr.length; i++) { List<Long>
+	 * individualList = new ArrayList<Long>(); Long h = salmonHeadArr[i]; Long t
+	 * = tailArr[i]; for (Long j = h; j <= t; j++) { individualList.add(j); }
+	 * allList1.add(individualList); }
+	 * 
+	 * Collections.sort(allList1, new Comparator<List<?>>() {
+	 * 
+	 * @Override public int compare(List<?> o1, List<?> o2) { return
+	 * Integer.valueOf(o1.size()).compareTo(o2.size()); } });
+	 * 
+	 * List<List<Long>> allList2 = new CopyOnWriteArrayList<List<Long>>(
+	 * allList1);
+	 * 
+	 * List<Integer> countList = new ArrayList<Integer>(); for (List<Long> list1
+	 * : allList1) { int count = 0; for (List<Long> list2 : allList2) {
+	 * List<Long> common = new ArrayList<Long>(list2); if
+	 * (!Collections.disjoint(common, list1)) { count++; allList2.remove(list2);
+	 * } } countList.add(count); } Collections.sort(countList);
+	 * Collections.reverse(countList); System.out.println(countList); if
+	 * (countList.get(0) == salmonHeadArr.length) { return countList.get(0); }
+	 * else { return countList.get(0) + countList.get(1); }
+	 * 
+	 * }
+	 */
 }
