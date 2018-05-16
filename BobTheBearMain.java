@@ -1,10 +1,7 @@
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.Locale.Category;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BobTheBearMain {
@@ -47,45 +44,84 @@ public class BobTheBearMain {
 	private static int NoOfSalmonsCatched(Long[] salmonLengthArr,
 			Long[] salmonHeadArr, Long[] tailArr) {
 
-		List<Long> headList = new ArrayList<Long>();
-		List<Long> tailList = new ArrayList<Long>();
+		List<List<Long>> allList1 = new CopyOnWriteArrayList<List<Long>>();
 
-		Set<Integer> set = new HashSet<Integer>();
 		for (int i = 0; i < salmonHeadArr.length; i++) {
-			long head1 = salmonHeadArr[i];
-			long tail1 = tailArr[i];
-			int catchCount = 0;
-			for (int j = 0; j < salmonHeadArr.length; j++) {
-				long head2 = salmonHeadArr[j];
-				long tail2 = tailArr[j];
-				int tempCount = 0;
-				for (long q = head1; q <= tail1; q++) {
-					for (long p = head2; p <= tail2; p++) {
-						if (q == p) {
-							tempCount++;
+			List<Long> individualList = new CopyOnWriteArrayList<Long>();
+			Long h = salmonHeadArr[i];
+			Long t = tailArr[i];
+			for (Long j = h; j <= t; j++) {
+				individualList.add(j);
+			}
+			allList1.add(individualList);
+		}
+
+		List<Integer> countist = new ArrayList<Integer>();
+
+		for (int j = 0; j < salmonLengthArr.length; j++) {
+			int fishCount = 0;
+			for (List<Long> fishCo : allList1) {
+				int tailindex = fishCo.size() - 1;
+				// int fishCount = 0;
+				if (fishCo.get(tailindex) < 0) {
+
+					if (fishCo.contains(0)) {
+						// fishCount++;
+						allList1.remove(fishCo);
+					}
+					// countist.add(fishCount);
+
+				} else {
+
+					List<Long> tempLis = new ArrayList<Long>();
+					if (fishCo.get(tailindex) > 0) {
+						allList1.remove(fishCo);
+						for (Long i : fishCo) {
+							i--;
+							tempLis.add(i);
+
+						}
+						allList1.add(tempLis);
+					}
+				}
+
+			}
+
+			for (List<Long> fishCo : allList1) {
+				// int tailindex = fishCo.size() - 1;
+				if (fishCo.contains(-1l)) {
+					fishCount++;
+					allList1.remove(fishCo);
+					for (List<Long> fishCo2 : allList1) {
+						if (fishCo2.contains(0l) && fishCo2.contains(-1l)) {
+							fishCount++;
+							allList1.remove(fishCo2);
+						} else if (fishCo2.contains(0l)) {
+							fishCount++;
+							allList1.remove(fishCo2);
+						} else if (!Collections.disjoint(fishCo, fishCo2)
+								&& allList1.size() > 1) {
+							fishCount++;
+							allList1.remove(fishCo2);
+							allList1.remove(fishCo);
 						}
 					}
-
 				}
-				if (tempCount > 0) {
-					catchCount++;
+				if (fishCount > 0) {
+					countist.add(fishCount);
 				}
-
-			}
-			set.add(catchCount);
-		}
-
-		List<Integer> al = new ArrayList<Integer>(set);
-		System.out.println(al);
-		if (al.size() > 1) {
-
-			if (al.get(0) == 1 && al.get(1) == 1) {
-				return 2;
-			} else {
-				return al.get(0) + al.get(1);
+				fishCount = 0;
 			}
 		}
-		return 0;
+
+		// System.out.println(allList1);
+		// System.out.println(countist);
+
+		if (countist.get(0) == salmonHeadArr.length) {
+			return countist.get(0);
+		} else {
+			return countist.get(0) + countist.get(1);
+		}
 	}
 	/*
 	 * // timeArr == headArr public static int NoOfSalmonsCatched(Long[]
