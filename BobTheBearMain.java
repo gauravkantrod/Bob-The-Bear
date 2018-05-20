@@ -2,7 +2,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class BobTheBearMain {
@@ -35,96 +37,158 @@ public class BobTheBearMain {
 			} else if (NoOfSalmons == 2) {
 				System.out.println(2);
 			} else {
-				System.out.println(NoOfSalmonsCatched(salmonLengthArr,
-						salmonTimeArr, tailArr));
+				List<List<Long>> allFishList = new CopyOnWriteArrayList<List<Long>>();
+				for (int i = 0; i < salmonLengthArr.length; i++) {
+					List<Long> individualFishList = new ArrayList<Long>();
+					long head = salmonTimeArr[i];
+					long tail = tailArr[i];
+					for (long j = head; j <= tail; j++) {
+						individualFishList.add(j);
+					}
+					allFishList.add(individualFishList);
+				}
+				Collections.sort(allFishList, new Comparator<List<?>>() {
+
+					@Override
+					public int compare(List<?> o1, List<?> o2) {
+						return Integer.valueOf(o1.size()).compareTo(o2.size());
+					}
+				});
+
+				System.out.println(NoOfSalmonsCatched(allFishList));
 			}
 		}
 		scan.close();
 	}
 
-	private static Long NoOfSalmonsCatched(Long[] salmonLengthArr,
-			Long[] salmonHeadArr, Long[] tailArr) {
+	private static Long NoOfSalmonsCatched(List<List<Long>> allFishList) {
 
-		List<List<Long>> allList1 = new CopyOnWriteArrayList<List<Long>>();
+		Map<Long, List<List<Long>>> map = new ConcurrentHashMap<Long, List<List<Long>>>();
 
-		for (int i = 0; i < salmonHeadArr.length; i++) {
-			List<Long> individualList = new CopyOnWriteArrayList<Long>();
-			Long h = salmonHeadArr[i];
-			Long t = tailArr[i];
-			for (Long j = h; j <= t; j++) {
-				individualList.add(j);
+		// System.out.println(allFishList);
+		for (List<Long> fishList1 : allFishList) {
+			Long count = 0l;
+			List<List<Long>> refLsit = new CopyOnWriteArrayList<List<Long>>();
+			for (List<Long> fishList2 : allFishList) {
+				if (!Collections.disjoint(fishList1, fishList2)) {
+					count++;
+					refLsit.add(fishList2);
+					allFishList.remove(fishList2);
+				}
 			}
-			allList1.add(individualList);
+			allFishList.remove(fishList1);
+
+			if (count > 0) {
+				map.put(count, refLsit);
+			}
+
 		}
+		long l = fishCatch(map);
 
-		Collections.sort(allList1, new Comparator<List<?>>() {
+		return l;
+	}
 
-			@Override
-			public int compare(List<?> o1, List<?> o2) {
-				return Integer.valueOf(o1.size()).compareTo(o2.size());
-			}
-		});
-
-		Long tempCount = 0l;
-		// System.out.println(allList1);
+	private static Long fishCatch(Map<Long, List<List<Long>>> map) {
+		// System.out.println("oriMap" + map);
 
 		List<Long> countList = new ArrayList<Long>();
-		Long tempcount = 0l;
-		for (List<Long> pltr : allList1) {
-			Long count = 0l;
-			List<List<Long>> allList2 = new CopyOnWriteArrayList<List<Long>>();
-			for (List<Long> cltr : allList1) {
-				if (!Collections.disjoint(pltr, cltr)) {
-					count++;
-					allList2.add(cltr);
+		List<Long> refVal1 = new CopyOnWriteArrayList<Long>();
+		List<Long> refVal2 = new CopyOnWriteArrayList<Long>();
+
+		Map<Long, List<List<Long>>> refMap = new ConcurrentHashMap<Long, List<List<Long>>>();
+
+		for (Long k1 : map.keySet()) {
+			for (Long k2 : map.keySet()) {
+				if (map.get(k1) != null && map.get(k2) != null) {
+					if (!map.get(k1).equals(map.get(k2))) {
+
+						if (k2 > k1) {
+							Long minKey = k1;
+							Long maxKey = k2;
+							List<List<Long>> k1List = new CopyOnWriteArrayList<List<Long>>();
+							List<List<Long>> k2List = new CopyOnWriteArrayList<List<Long>>();
+							k1List = map.get(k1);
+							k2List = map.get(k2);
+							if (k1List != null && k2List != null) {
+								for (List<Long> l1 : k1List) {
+
+									for (List<Long> l2 : k2List) {
+										if (!Collections.disjoint(l1, l2)
+												&& !refVal1.equals(l1)
+												&& !refVal2.equals(l2)) {
+											minKey--;
+											maxKey++;
+											map.remove(k1);
+											map.remove(k2);
+											k1List.remove(l1);
+											k2List.remove(l2);
+											refMap.put(minKey, k1List);
+											refMap.put(maxKey, k2List);
+											refVal1 = l1;
+											refVal2 = l2;
+											countList.add(minKey);
+											countList.add(maxKey);
+
+										}
+									}
+								}
+							}
+						} else if (k1 > k2) {
+							Long minKey = k2;
+							Long maxKey = k1;
+							List<List<Long>> k1List = new CopyOnWriteArrayList<List<Long>>();
+							List<List<Long>> k2List = new CopyOnWriteArrayList<List<Long>>();
+							k1List = map.get(k1);
+							k2List = map.get(k2);
+							if (k1List != null && k2List != null) {
+								for (List<Long> l1 : k1List) {
+
+									for (List<Long> l2 : k2List) {
+										if (!Collections.disjoint(l1, l2)
+												&& !refVal1.equals(l1)
+												&& !refVal2.equals(l2)) {
+											minKey--;
+											maxKey++;
+											map.remove(k1);
+											map.remove(k2);
+											k1List.remove(l1);
+											k2List.remove(l2);
+											refMap.put(minKey, k1List);
+											refMap.put(maxKey, k2List);
+											refVal1 = l1;
+											refVal2 = l2;
+											countList.add(minKey);
+											countList.add(maxKey);
+
+										}
+									}
+								}
+							}
+						} else if (k1 == k2) {
+							countList.add(k1);
+							map.remove(k1);
+							map.remove(k2);
+						}
+					} else if (map.size() == 1
+							&& map.get(k1).equals(map.get(k2))) {
+						countList.add(k1);
+					}
+
 				}
 
 			}
-			if (count > tempcount) {
-				countList.add(count);
-				tempCount = count;
-				allList1.removeAll(allList2);
-
-			}
-
 		}
 
-		// System.out.println(countList);
+		// System.out.println(refMap);
+
 		Collections.sort(countList);
 		Collections.reverse(countList);
-
-		return countList.get(0) + countList.get(1);
+		// System.out.println(countList);
+		if (countList.size() == 1) {
+			return countList.get(0);
+		} else {
+			return countList.get(0) + countList.get(1);
+		}
 
 	}
-	/*
-	 * // timeArr == headArr public static int NoOfSalmonsCatched(Long[]
-	 * salmonLengthArr, Long[] salmonHeadArr, Long[] tailArr) {
-	 * 
-	 * List<List<Long>> allList1 = new ArrayList<List<Long>>();
-	 * 
-	 * 
-	 * for (int i = 0; i < salmonHeadArr.length; i++) { List<Long>
-	 * individualList = new ArrayList<Long>(); Long h = salmonHeadArr[i]; Long t
-	 * = tailArr[i]; for (Long j = h; j <= t; j++) { individualList.add(j); }
-	 * allList1.add(individualList); }
-	 * 
-	 * Collections.sort(allList1, new Comparator<List<?>>() {
-	 * 
-	 * @Override public int compare(List<?> o1, List<?> o2) { return
-	 * Integer.valueOf(o1.size()).compareTo(o2.size()); } });
-	 * 
-	 * List<List<Long>> allList2 = new CopyOnWriteArrayList<List<Long>>(
-	 * allList1);
-	 * 
-	 * List<Integer> countList = new ArrayList<Integer>(); for (List<Long> list1
-	 * : allList1) { int count = 0; for (List<Long> list2 : allList2) {
-	 * List<Long> common = new ArrayList<Long>(list2); if
-	 * (!Collections.disjoint(common, list1)) { count++; allList2.remove(list2);
-	 * } } countList.add(count); } Collections.sort(countList);
-	 * Collections.reverse(countList); System.out.println(countList); if
-	 * (countList.get(0) == salmonHeadArr.length) { return countList.get(0); }
-	 * else { return countList.get(0) + countList.get(1); }
-	 * 
-	 * }
-	 */
 }
